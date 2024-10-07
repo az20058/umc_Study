@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 
 const CategoryContainer = styled.div`
@@ -11,6 +12,7 @@ const Title = styled.h2`
   margin-bottom: 20px;
   font-size: 24px;
   font-weight: bold;
+  text-align: left;
 `;
 
 const CategoryList = styled.div`
@@ -47,8 +49,8 @@ const CategoryLabel = styled.div`
   font-size: 14px;
 `;
 
-const Category = ({ image, label }) => (
-  <CategoryItem>
+const Category = ({ image, label, onClick }) => (
+  <CategoryItem onClick={onClick}>
     <CategoryImage src={image} alt={label} />
     <CategoryLabel>{label}</CategoryLabel>
   </CategoryItem>
@@ -56,18 +58,20 @@ const Category = ({ image, label }) => (
 
 const MovieCategory = () => {
   const categories = [
-    { image: 'https://i.pinimg.com/474x/13/29/51/132951cad4c271cc96c2d5fd1a84e825.jpg', label: '현재 상영중인' },
-    { image: 'https://i.pinimg.com/474x/ed/40/7e/ed407e49a629fe66e45d3b4f6bbfcf0f.jpg', label: '인기있는' },
-    { image: 'https://i.pinimg.com/474x/b0/40/52/b0405272c264ee01cb0b783273280687.jpg', label: '높은 평가를 받은' },
-    { image: 'https://i.pinimg.com/474x/5d/97/c7/5d97c7914a50d86264231a6a7087fde8.jpg', label: '개봉 예정중인' },
+    { image: 'https://i.pinimg.com/474x/13/29/51/132951cad4c271cc96c2d5fd1a84e825.jpg', label: '현재 상영중인', type: 'now-playing' },
+    { image: 'https://i.pinimg.com/474x/ed/40/7e/ed407e49a629fe66e45d3b4f6bbfcf0f.jpg', label: '인기있는', type: 'popular' },
+    { image: 'https://i.pinimg.com/474x/b0/40/52/b0405272c264ee01cb0b783273280687.jpg', label: '높은 평가를 받은', type: 'top-rated' },
+    { image: 'https://i.pinimg.com/474x/5d/97/c7/5d97c7914a50d86264231a6a7087fde8.jpg', label: '개봉 예정중인', type: 'up-coming' },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <CategoryContainer>
       <Title>카테고리</Title>
       <CategoryList>
         {categories.map((category, index) => (
-          <Category key={index} image={category.image} label={category.label} />
+          <Category onClick={()=>navigate(`/movie/${category.type}`)} key={index} image={category.image} label={category.label} />
         ))}
       </CategoryList>
     </CategoryContainer>

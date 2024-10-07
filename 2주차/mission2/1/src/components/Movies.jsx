@@ -1,3 +1,7 @@
+import axios from 'axios';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 
 const POSTER_BASE_URL = 'https://image.tmdb.org/t/p/w500';
@@ -408,8 +412,8 @@ const MovieList = styled.div`
   grid-template-columns: repeat(8, 1fr);
   justify-content: center;
   background-color: black;
+  gap: 10px; /* 각 셀 사이의 간격 */
 `;
-
 
 const MovieCard = styled.div`
   background-color: black;
@@ -448,9 +452,42 @@ const MovieReleaseDate = styled.span`
 
 // 컴포넌트 정의
 export default function Movies() {
+    const [movies, setMovies] = useState([]);
+    const { type } = useParams();
+    
+    
+    useEffect(()=>{
+      let url = "";
+      switch (type) {
+        case "now-playing":
+          url = `https://api.themoviedb.org/3/movie/now_playing?language=ko-KR&page=1`;
+          break;
+        case "popular":
+          url = `https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=1`;
+          break;
+        case "top-rated":
+          url = `https://api.themoviedb.org/3/movie/top_rated?language=ko-KR&page=1`;
+          break;
+        case "up-coming":
+          url = `https://api.themoviedb.org/3/movie/upcoming?language=ko-KR&page=1`;
+          break;
+        default:
+          url = `https://api.themoviedb.org/3/movie/popular?language=ko-KR&page=1`;
+      }
+
+        axios.get(url, {
+            headers: {
+                Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjNTNkYWIyMDkxMzI2Y2Y3NTkwNTAwYjQyODNkNjZkNyIsIm5iZiI6MTcyNjE0MTU3Ny42MDM2ODcsInN1YiI6IjY0MzVmY2Y2NjUxZmNmMDBkM2RhYzNmNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cFPsPRHPidq2OnJ3U-3wHJYhnGajDFqUsM8XJ_a_0bw`
+            }
+        })
+            .then((res)=>{
+                setMovies(res.data.results);
+            })
+    }, [type])
+
   return (
     <MovieList>
-      {MOVIES.results.map(movie => (
+      {movies&&movies.map(movie => (
         <MovieCard key={movie.id}>
           <MoviePoster src={`${POSTER_BASE_URL}${movie.poster_path}`} alt={movie.title} />
           <MovieTitle>{movie.title}</MovieTitle>
