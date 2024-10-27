@@ -20,7 +20,7 @@ const MovieList = styled.div`
 export default function Movies() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState("");
+  const [isError, setIsError] = useState(false);
   const { type } = useParams();
 
   useEffect(() => {
@@ -29,6 +29,8 @@ export default function Movies() {
 
   return (
     <MovieList>
+      {isLoading && <div style={{ color: "white" }}>Loading...</div>}
+      {isError && <div style={{ color: "white" }}>Error!</div>}
       {!isLoading &&
         !isError &&
         movies.map((movie, index) => <MovieCard key={index} movie={movie} />)}
