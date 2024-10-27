@@ -7,8 +7,9 @@ import styled from "styled-components";
 export default function MovieDetails() {
   const location = useLocation();
   const params = useParams();
-  const { src, title, rate, date } = location.state || {};
+  const { src, title, rate, date, overview } = location.state || {};
   const [crews, setCrews] = useState([]);
+  console.log(overview);
 
   useEffect(() => {
     axios
@@ -29,6 +30,7 @@ export default function MovieDetails() {
         <span>{title}</span>
         <span>평균 {rate}</span>
         <span>{date.slice(0, 4)}</span>
+        <span>{overview}</span>
       </Header>
       <Staff>
         <span>감독/출연</span>
@@ -53,6 +55,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto;
 `;
 const Header = styled.div`
   background-image: linear-gradient(
@@ -80,9 +83,14 @@ const Header = styled.div`
     font-weight: 800;
     font-size: 30px;
   }
+
+  span:last-child {
+    text-align: left;
+    width: 50%;
+  }
 `;
 const Staff = styled.div`
-  overflow-y: auto;
+  height: 40%;
   span {
     color: white;
   }

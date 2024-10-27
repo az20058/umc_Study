@@ -6,7 +6,6 @@ const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
 export default function MovieCard({ movie }) {
   const navigate = useNavigate();
-  console.log(movie);
 
   return (
     <CardContainer
@@ -19,6 +18,7 @@ export default function MovieCard({ movie }) {
             title: movie.title,
             rate: movie.vote_average,
             date: movie.release_date,
+            overview: movie.overview,
           },
         })
       }
