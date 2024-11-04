@@ -35,12 +35,23 @@ export default function SignUp() {
         color={errors.email || errors.password ? "gray" : "#e83278"}
       >
         <h1>회원가입</h1>
-        <Input type="email" register={register} placeholder="이메일" />
+        <Input
+          name="email"
+          type="email"
+          register={register}
+          placeholder="이메일"
+        />
         <label>{errors.email?.message}</label>
-        <Input type="password" register={register} placeholder="비밀번호" />
+        <Input
+          name="password"
+          type="password"
+          register={register}
+          placeholder="비밀번호"
+        />
         <label>{errors.password?.message}</label>
         <Input
-          type="password2"
+          type="password"
+          name="password2"
           register={register}
           placeholder="비밀번호 확인"
         />

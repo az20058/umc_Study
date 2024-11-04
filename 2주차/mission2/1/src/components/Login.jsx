@@ -34,12 +34,14 @@ export default function Login() {
       >
         <h1>로그인 페이지</h1>
         <Input
+          name="email"
           placeholder="이메일을 입력해주세요"
           type={"email"}
           register={register}
         />
         <label>{errors.email?.message}</label>
         <Input
+          name="password"
           placeholder="비밀번호를 입력해주세요"
           type={"password"}
           register={register}

@@ -1,8 +1,8 @@
 import styled from "styled-components";
 
-export default function Input({ type, placeholder, register }) {
+export default function Input({ name, type, placeholder, register }) {
   return (
-    <InputWrapper {...register(type)} type={type} placeholder={placeholder} />
+    <InputWrapper {...register(name)} type={type} placeholder={placeholder} />
   );
 }
 
