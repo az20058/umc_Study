@@ -40,7 +40,7 @@ export default function SignUp() {
         <Input type="password" register={register} placeholder="비밀번호" />
         <label>{errors.password?.message}</label>
         <Input
-          type="password"
+          type="password2"
           register={register}
           placeholder="비밀번호 확인"
         />
