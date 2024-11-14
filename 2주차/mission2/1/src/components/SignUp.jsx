@@ -3,6 +3,8 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "./Input";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function SignUp() {
   const schema = yup.object().shape({
@@ -25,8 +27,12 @@ export default function SignUp() {
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+  const navigate = useNavigate();
   const onSubmit = (data) => {
-    console.log(data);
+    axios.post("http://localhost:3000/auth/register", data).then(() => {
+      alert("회원가입이 완료되었습니다.");
+      navigate("/login");
+    });
   };
   return (
     <PageWrapper>
@@ -51,7 +57,7 @@ export default function SignUp() {
         <label>{errors.password?.message}</label>
         <Input
           type="password"
-          name="password2"
+          name="passwordCheck"
           register={register}
           placeholder="비밀번호 확인"
         />

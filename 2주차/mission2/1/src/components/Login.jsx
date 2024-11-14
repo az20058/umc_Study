@@ -3,6 +3,8 @@ import styled from "styled-components";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "./Input";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const schema = yup.object().shape({
@@ -22,8 +24,18 @@ export default function Login() {
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+  const navigate = useNavigate();
   const onSubmit = (data) => {
-    console.log(data);
+    axios
+      .post("http://localhost:3000/auth/login", {
+        email: data.email,
+        password: data.password,
+      })
+      .then((res) => {
+        localStorage.setItem("token", res.data.accessToken);
+        localStorage.setItem("refresh", res.data.refreshToken);
+        navigate("/");
+      });
   };
 
   return (
