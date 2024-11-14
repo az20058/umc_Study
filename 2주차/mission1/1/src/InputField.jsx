@@ -1,16 +1,17 @@
-import './App.css';
+// InputField.js
+import React, { useContext } from "react";
+import { TaskContext } from "./TaskContext";
 
-// eslint-disable-next-line react/prop-types
-const InputField = ({ value, onChange, placeholder }) => {
+function InputField({ placeholder }) {
+  const { inputValue, setInputValue } = useContext(TaskContext);
   return (
     <input
-      type="text"
-      value={value}
-      onChange={onChange}
+      value={inputValue}
+      onChange={(e) => setInputValue(e.target.value)}
       placeholder={placeholder}
-      className="input-field"
+      style={{ marginRight: "10px" }}
     />
   );
-};
+}
 
 export default InputField;

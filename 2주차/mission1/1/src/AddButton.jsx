@@ -1,12 +1,14 @@
-import './App.css';
+// AddButton.js
+import React, { useContext } from "react";
+import { TaskContext } from "./TaskContext";
 
-// eslint-disable-next-line react/prop-types
-const AddButton = ({ onClick, label }) => {
+function AddButton({ label, onClick }) {
+  const { addTask } = useContext(TaskContext);
   return (
-    <button onClick={onClick} className="add-button">
+    <button onClick={onClick || addTask} style={{ marginRight: "10px" }}>
       {label}
     </button>
   );
-};
+}
 
 export default AddButton;
