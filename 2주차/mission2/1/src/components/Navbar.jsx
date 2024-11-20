@@ -1,5 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -8,39 +8,48 @@ const Navbar = () => {
   const token = localStorage.getItem("token");
   console.log(token);
 
-  const [id, setId] = useState(null);
-  console.log(id);
-
   const logout = () => {
     localStorage.clear();
     window.location.reload();
   };
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:3000/user/me", {
-        headers: {
-          Authorization: "Bearer " + token,
-        },
-      })
-      .then((res) => {
-        setId(res.data.email.split("@")[0]);
-      });
-  }, [token]);
+  const fetchUserData = async (token) => {
+    const response = await axios.get("http://localhost:3000/user/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  };
+
+  const {
+    data: user,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["userData", token],
+    queryFn: () => fetchUserData(token),
+    enabled: !!token,
+  });
+
+  if (isLoading) return null; // 로딩 중 상태 처리
+  if (isError) return null; // 에러 상태 처리
+
+  const userId = user?.email.split("@")[0];
 
   return (
     <NavContainer>
       <Logo onClick={() => navigate("/")}>YONGCHA</Logo>
       <Menu>
-        {!id ? (
+        {!userId ? (
           <MenuItem onClick={() => navigate("/login")}>로그인</MenuItem>
         ) : (
           <>
-            <UserInfo>{id}님 환영합니다.</UserInfo>
+            <UserInfo>{userId}님 환영합니다.</UserInfo>
             <MenuItem onClick={logout}>로그아웃</MenuItem>
           </>
         )}
-        {!id && (
+        {!userId && (
           <SignupButton onClick={() => navigate("/signUp")}>
             회원가입
           </SignupButton>

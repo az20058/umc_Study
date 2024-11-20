@@ -1,6 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useState } from "react";
-import { useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
 
@@ -8,21 +7,32 @@ export default function MovieDetails() {
   const location = useLocation();
   const params = useParams();
   const { src, title, rate, date, overview } = location.state || {};
-  const [crews, setCrews] = useState([]);
   console.log(overview);
 
-  useEffect(() => {
-    axios
-      .get(`https://api.themoviedb.org/3/movie/${params.id}/credits`, {
+  const fetchCrews = async (movieId) => {
+    const res = await axios.get(
+      `https://api.themoviedb.org/3/movie/${movieId}/credits`,
+      {
         headers: {
           Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjNTNkYWIyMDkxMzI2Y2Y3NTkwNTAwYjQyODNkNjZkNyIsIm5iZiI6MTcyNjE0MTU3Ny42MDM2ODcsInN1YiI6IjY0MzVmY2Y2NjUxZmNmMDBkM2RhYzNmNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cFPsPRHPidq2OnJ3U-3wHJYhnGajDFqUsM8XJ_a_0bw`,
         },
-      })
-      .then((res) => {
-        console.log(res.data.crew);
-        setCrews(res.data.crew);
-      });
-  }, [params]);
+      }
+    );
+    return res.data.crew;
+  };
+
+  const {
+    data: crews = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["movieCrews", params.id],
+    queryFn: () => fetchCrews(params.id),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  if (isLoading) return <Container>Loading...</Container>;
+  if (isError) return <Container>Error loading data</Container>;
 
   return (
     <Container>

@@ -3,50 +3,42 @@ import { useRef, useState } from "react";
 import styled from "styled-components";
 import { debounce } from "lodash";
 import MovieCard from "./MovieCard";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Search() {
   const titleRef = useRef();
-  const [movies, setMovies] = useState([]);
-  const [not, setNot] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [query, setQuery] = useState("");
 
-  // 실시간 검색용 디바운스된 함수
-  const handleSearch = debounce((query) => {
-    if (query.trim() === "") {
-      setMovies([]);
-      setNot(false);
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setNot(false);
-
-    axios
-      .get(`https://api.themoviedb.org/3/search/movie?query=${query}`, {
+  const fetchMovies = async (query) => {
+    if (!query.trim()) return { results: [] };
+    const { data } = await axios.get(
+      `https://api.themoviedb.org/3/search/movie?query=${query}`,
+      {
         headers: {
           Authorization:
             "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjNTNkYWIyMDkxMzI2Y2Y3NTkwNTAwYjQyODNkNjZkNyIsIm5iZiI6MTcyNjE0MTU3Ny42MDM2ODcsInN1YiI6IjY0MzVmY2Y2NjUxZmNmMDBkM2RhYzNmNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cFPsPRHPidq2OnJ3U-3wHJYhnGajDFqUsM8XJ_a_0bw",
         },
-      })
-      .then((res) => {
-        setMovies(res.data.results);
-        setNot(res.data.results.length === 0);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, 500); // 500ms 디바운스 시간 설정
+      }
+    );
+    return data;
+  };
 
-  // 버튼 클릭 시 검색 요청을 보내는 함수
-  function handleClick() {
-    const query = titleRef.current.value;
-    handleSearch(query);
-  }
+  const { data, isFetching } = useQuery({
+    queryKey: ["movies", query],
+    queryFn: () => fetchMovies(query),
+    enabled: !!query, // query가 빈 값이 아니어야 실행
+    keepPreviousData: true,
+  });
 
-  function handleChange(event) {
-    handleSearch(event.target.value); // 실시간 검색 요청
-  }
+  const handleChange = (e) => {
+    const value = e.target.value;
+    titleRef.current = value;
+    debouncedSearch(value);
+  };
+
+  const debouncedSearch = debounce((value) => {
+    setQuery(value);
+  }, 500);
 
   return (
     <PageWrapper>
@@ -56,17 +48,18 @@ export default function Search() {
           onChange={handleChange}
           placeholder="영화 제목을 입력해주세요"
         />
-        <button onClick={handleClick}>검색</button>
       </InputWrapper>
-      {!not ? (
+      {isFetching ? (
         <Movies>
-          {isLoading
-            ? Array.from({ length: 20 }).map((_, index) => (
-                <SkeletonMovie key={index} />
-              ))
-            : movies.map((movie, index) => (
-                <MovieCard key={index} movie={movie} />
-              ))}
+          {Array.from({ length: 20 }).map((_, index) => (
+            <SkeletonMovie key={index} />
+          ))}
+        </Movies>
+      ) : data?.results?.length > 0 ? (
+        <Movies>
+          {data.results.map((movie, index) => (
+            <MovieCard key={index} movie={movie} />
+          ))}
         </Movies>
       ) : (
         <Not>해당하는 검색어에 해당하는 검색 결과가 없습니다.</Not>
