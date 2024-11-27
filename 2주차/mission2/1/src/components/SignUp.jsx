@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "./Input";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
 export default function SignUp() {
   const schema = yup.object().shape({
@@ -18,6 +19,7 @@ export default function SignUp() {
       .string()
       .oneOf([yup.ref("password"), null], "비밀번호가 일치하지 않습니다"),
   });
+
   const {
     register,
     handleSubmit,
@@ -27,13 +29,28 @@ export default function SignUp() {
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+
   const navigate = useNavigate();
-  const onSubmit = (data) => {
-    axios.post("http://localhost:3000/auth/register", data).then(() => {
+
+  // 회원가입을 위한 useMutation 설정
+  const signUpMutation = useMutation({
+    mutationFn: (data) =>
+      axios.post("http://localhost:3000/auth/register", data),
+    onSuccess: () => {
       alert("회원가입이 완료되었습니다.");
       navigate("/login");
-    });
+    },
+    onError: (error) => {
+      console.error("회원가입 실패:", error);
+      alert("회원가입에 실패했습니다.");
+    },
+  });
+
+  const onSubmit = (data) => {
+    // useMutation의 mutate를 사용하여 회원가입 요청
+    signUpMutation.mutate(data);
   };
+
   return (
     <PageWrapper>
       <SignupWrapper
@@ -62,7 +79,9 @@ export default function SignUp() {
           placeholder="비밀번호 확인"
         />
         <label>{errors.password2?.message}</label>
-        <button type="submit">회원가입</button>
+        <button type="submit" disabled={signUpMutation.isLoading}>
+          {signUpMutation.isLoading ? "회원가입 중..." : "회원가입"}
+        </button>
       </SignupWrapper>
     </PageWrapper>
   );

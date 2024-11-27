@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "./Input";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 
 export default function Login() {
   const schema = yup.object().shape({
@@ -15,6 +16,7 @@ export default function Login() {
       .max(16, "8~16자를 사용하세요")
       .required(),
   });
+
   const {
     register,
     handleSubmit,
@@ -24,18 +26,30 @@ export default function Login() {
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+
   const navigate = useNavigate();
-  const onSubmit = (data) => {
-    axios
-      .post("http://localhost:3000/auth/login", {
+
+  // 로그인 요청을 위한 useMutation 설정
+  const loginMutation = useMutation({
+    mutationFn: (data) =>
+      axios.post("http://localhost:3000/auth/login", {
         email: data.email,
         password: data.password,
-      })
-      .then((res) => {
-        localStorage.setItem("token", res.data.accessToken);
-        localStorage.setItem("refresh", res.data.refreshToken);
-        navigate("/");
-      });
+      }),
+    onSuccess: (res) => {
+      localStorage.setItem("token", res.data.accessToken);
+      localStorage.setItem("refresh", res.data.refreshToken);
+      navigate("/");
+    },
+    onError: (error) => {
+      console.error("로그인 실패:", error);
+      alert("로그인에 실패했습니다.");
+    },
+  });
+
+  const onSubmit = (data) => {
+    // useMutation의 mutate를 사용하여 로그인 요청
+    loginMutation.mutate(data);
   };
 
   return (
