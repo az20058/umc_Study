@@ -11,6 +11,7 @@ import MovieCategory from "./components/MovieCategory";
 import MovieDetails from "./components/MovieDetails";
 import CollectionsPage from "./pages/CollectionsPage";
 import RatingPage from "./pages/RatingPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,10 @@ const router = createBrowserRouter([
       {
         path: "ratings",
         element: <RatingPage />,
+      },
+      {
+        path: "recommendations",
+        element: <RecommendationsPage />,
       },
     ],
   },

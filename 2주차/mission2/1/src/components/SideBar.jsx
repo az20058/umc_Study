@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { FaSearch, FaFilm } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { MdCollections, MdStarRate } from "react-icons/md";
+import { MdCollections, MdStarRate, MdRecommend } from "react-icons/md";
 
 const SideBar = () => {
   const navigate = useNavigate();
@@ -16,14 +16,15 @@ const SideBar = () => {
         <FaFilm />
         <span>영화</span>
       </MenuItem>
-      <MenuItem onClick={() => navigate("/collections")}>
-        <MdCollections />
-        <span>My Collections</span>
-      </MenuItem>
 
       <MenuItem onClick={() => navigate("/ratings")}>
         <MdStarRate />
-        <span>My Ratings</span>
+        <span>영화 평가</span>
+      </MenuItem>
+
+      <MenuItem onClick={() => navigate("/recommendations")}>
+        <MdRecommend />
+        <span>추천 영화</span>
       </MenuItem>
     </SidebarContainer>
   );
