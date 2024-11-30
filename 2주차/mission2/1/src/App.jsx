@@ -9,6 +9,8 @@ import SignUp from "./components/SignUp";
 import Search from "./components/Search";
 import MovieCategory from "./components/MovieCategory";
 import MovieDetails from "./components/MovieDetails";
+import CollectionsPage from "./pages/CollectionsPage";
+import RatingPage from "./pages/RatingPage";
 
 const router = createBrowserRouter([
   {
@@ -44,6 +46,14 @@ const router = createBrowserRouter([
       {
         path: "movies/:id",
         element: <MovieDetails />,
+      },
+      {
+        path: "collections",
+        element: <CollectionsPage />,
+      },
+      {
+        path: "ratings",
+        element: <RatingPage />,
       },
     ],
   },
