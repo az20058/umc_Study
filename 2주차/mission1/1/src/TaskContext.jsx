@@ -1,58 +1,139 @@
-// TaskContext.js
-import { createContext, useState } from "react";
+import React, { createContext, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { fetchTasks, addTask, updateTask, deleteTask } from "./api";
 
 export const TaskContext = createContext();
 
-export const TaskProvider = ({ children }) => {
-  const [tasks, setTasks] = useState([]);
-  const [inputValue, setInputValue] = useState("");
+export function TaskProvider({ children }) {
+  const queryClient = useQueryClient();
+
+  // Input state for adding new tasks
+  const [inputTitle, setInputTitle] = useState("");
+  const [inputDescription, setInputDescription] = useState("");
+
+  // Edit task state
   const [editIndex, setEditIndex] = useState(null);
-  const [editValue, setEditValue] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
-  // 새로운 할 일 추가
-  const addTask = () => {
-    if (inputValue.trim()) {
-      setTasks([...tasks, { text: inputValue, id: Date.now() }]);
-      setInputValue("");
+  // Fetch tasks
+  const {
+    data: tasks = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["tasks"],
+    queryFn: fetchTasks,
+  });
+
+  // Mutations
+  const addTaskMutation = useMutation({
+    mutationFn: addTask,
+    onSuccess: () => queryClient.invalidateQueries(["tasks"]),
+  });
+
+  const updateTaskMutation = useMutation({
+    mutationFn: updateTask,
+    onSuccess: () => queryClient.invalidateQueries(["tasks"]),
+  });
+
+  const deleteTaskMutation = useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => queryClient.invalidateQueries(["tasks"]),
+  });
+
+  // Function to add a new task
+  const addNewTask = () => {
+    if (!inputTitle.trim() || !inputDescription.trim()) {
+      alert("제목과 내용을 입력하세요."); // Validation
+      return;
     }
+
+    addTaskMutation.mutate(
+      {
+        title: inputTitle.trim(),
+        content: inputDescription.trim(),
+      },
+      {
+        onSuccess: () => {
+          alert("Task가 등록되었습니다!"); // Success notification
+          setInputTitle(""); // Clear the input fields
+          setInputDescription("");
+        },
+        onError: (error) => {
+          console.error("Task 등록 실패:", error); // Log error
+          alert("Task 등록에 실패했습니다. 다시 시도해주세요."); // Error notification
+        },
+      }
+    );
   };
 
-  // 할 일 삭제
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  // Update task
+  const updateExistingTask = (id) => {
+    const taskToUpdate = tasks.find((task) => task.id === id);
+
+    if (!taskToUpdate) {
+      console.error("Task not found for updating");
+      return;
+    }
+
+    updateTaskMutation.mutate({
+      id,
+      updatedTask: {
+        title: editTitle || taskToUpdate.title,
+        description: editDescription || taskToUpdate.description,
+        isChecked: taskToUpdate.isChecked,
+      },
+    });
+
+    setEditIndex(null);
+    setEditTitle("");
+    setEditDescription("");
   };
 
-  // 수정 시작
+  // Remove task
+  const removeTask = (id) => {
+    deleteTaskMutation.mutate(id);
+  };
+
+  // Toggle check state
+  const toggleCheck = (id, isChecked) => {
+    updateTaskMutation.mutate({
+      id,
+      updatedTask: { isChecked: !isChecked },
+    });
+  };
+
+  // Start editing
   const startEditing = (index) => {
     setEditIndex(index);
-    setEditValue(tasks[index].text);
-  };
-
-  // 수정 완료
-  const completeEditing = (index) => {
-    const updatedTasks = [...tasks];
-    updatedTasks[index].text = editValue;
-    setTasks(updatedTasks);
-    setEditIndex(null);
-    setEditValue("");
+    setEditTitle(tasks[index].title);
+    setEditDescription(tasks[index].description);
   };
 
   return (
     <TaskContext.Provider
       value={{
         tasks,
-        inputValue,
+        isLoading,
+        inputTitle,
+        setInputTitle,
+        inputDescription,
+        setInputDescription,
+        addNewTask, // 제공
+        removeTask,
+        toggleCheck,
         editIndex,
-        editValue,
-        setInputValue,
-        setEditValue,
-        addTask,
-        deleteTask,
+        editTitle,
+        setEditTitle,
+        editDescription,
+        setEditDescription,
         startEditing,
-        completeEditing,
+        updateExistingTask,
       }}
     >
       {children}
     </TaskContext.Provider>
   );
-};
+}
