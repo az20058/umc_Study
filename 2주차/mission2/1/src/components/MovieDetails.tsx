@@ -3,13 +3,33 @@ import axios from "axios";
 import { useLocation, useParams } from "react-router-dom";
 import styled from "styled-components";
 
+// 타입 정의
+interface LocationState {
+  src: string;
+  title: string;
+  rate: number;
+  date: string;
+  overview: string;
+}
+
+interface Crew {
+  id: number;
+  name: string;
+  profile_path: string;
+  job: string; // 'Director' 등을 포함
+}
+
+interface Params {
+  id: string; // URL에서 가져온 영화 ID
+}
+
 export default function MovieDetails() {
   const location = useLocation();
-  const params = useParams();
-  const { src, title, rate, date, overview } = location.state || {};
-  console.log(overview);
+  const params = useParams<Params>();
+  const { src, title, rate, date, overview } = (location.state ||
+    {}) as LocationState;
 
-  const fetchCrews = async (movieId) => {
+  const fetchCrews = async (movieId: string): Promise<Crew[]> => {
     const res = await axios.get(
       `https://api.themoviedb.org/3/movie/${movieId}/credits`,
       {
@@ -18,16 +38,18 @@ export default function MovieDetails() {
         },
       }
     );
-    return res.data.crew;
+    return res.data.crew.filter(
+      (crew: Crew) => crew.job === "Director" || crew.profile_path
+    );
   };
 
   const {
     data: crews = [],
     isLoading,
     isError,
-  } = useQuery({
+  } = useQuery<Crew[]>({
     queryKey: ["movieCrews", params.id],
-    queryFn: () => fetchCrews(params.id),
+    queryFn: () => fetchCrews(params.id!),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -39,16 +61,21 @@ export default function MovieDetails() {
       <Header src={src}>
         <span>{title}</span>
         <span>평균 {rate}</span>
-        <span>{date.slice(0, 4)}</span>
+        <span>{date?.slice(0, 4)}</span>
         <span>{overview}</span>
       </Header>
       <Staff>
         <span>감독/출연</span>
         <PeopleWrapper>
-          {crews.map((crew, index) => (
-            <People key={index}>
+          {crews.map((crew) => (
+            <People key={crew.id}>
               <img
-                src={"https://image.tmdb.org/t/p/original" + crew.profile_path}
+                src={
+                  crew.profile_path
+                    ? "https://image.tmdb.org/t/p/original" + crew.profile_path
+                    : "https://via.placeholder.com/100"
+                }
+                alt={crew.name}
               />
               <span>{crew.name}</span>
             </People>
@@ -59,6 +86,7 @@ export default function MovieDetails() {
   );
 }
 
+// 스타일 정의
 const Container = styled.div`
   background-color: black;
   width: 100%;
@@ -67,7 +95,8 @@ const Container = styled.div`
   align-items: center;
   overflow-y: auto;
 `;
-const Header = styled.div`
+
+const Header = styled.div<{ src: string }>`
   background-image: linear-gradient(
       to right,
       rgba(0, 0, 0, 1),
@@ -99,6 +128,7 @@ const Header = styled.div`
     width: 50%;
   }
 `;
+
 const Staff = styled.div`
   height: 40%;
   span {

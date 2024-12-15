@@ -2,8 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import React from "react";
 
-const Navbar = () => {
+interface User {
+  email: string;
+}
+
+const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   console.log(token);
@@ -13,8 +18,8 @@ const Navbar = () => {
     window.location.reload();
   };
 
-  const fetchUserData = async (token) => {
-    const response = await axios.get("http://localhost:3000/user/me", {
+  const fetchUserData = async (token: string): Promise<User> => {
+    const response = await axios.get<User>("http://localhost:3000/user/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -26,9 +31,9 @@ const Navbar = () => {
     data: user,
     isLoading,
     isError,
-  } = useQuery({
+  } = useQuery<User>({
     queryKey: ["userData", token],
-    queryFn: () => fetchUserData(token),
+    queryFn: () => fetchUserData(token!),
     enabled: !!token,
   });
 

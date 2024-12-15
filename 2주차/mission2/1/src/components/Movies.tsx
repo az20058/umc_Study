@@ -3,6 +3,7 @@ import styled from "styled-components";
 import MovieCard from "./MovieCard";
 import axios from "axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { FC } from "react";
 
 // 스타일 컴포넌트 정의
 const MovieList = styled.div`
@@ -46,7 +47,29 @@ const PaginationControls = styled.div`
   }
 `;
 
-const fetchMovies = async ({ pageParam = 1, queryKey }) => {
+// Movie 데이터 타입 정의
+interface Movie {
+  id: number;
+  title: string;
+  poster_path: string;
+  [key: string]: any; // 필요한 추가 필드 정의
+}
+
+interface FetchMoviesResponse {
+  results: Movie[];
+  nextPage: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+// fetchMovies 함수 타입 추가
+const fetchMovies = async ({
+  pageParam = 1,
+  queryKey,
+}: {
+  pageParam?: number;
+  queryKey: string[];
+}): Promise<FetchMoviesResponse> => {
   const type = queryKey[1];
   let url = "";
   switch (type) {
@@ -80,8 +103,8 @@ const fetchMovies = async ({ pageParam = 1, queryKey }) => {
 };
 
 // 컴포넌트 정의
-export default function Movies() {
-  const { type } = useParams();
+const Movies: FC = () => {
+  const { type } = useParams<{ type: string }>();
 
   const {
     data,
@@ -92,10 +115,10 @@ export default function Movies() {
     hasNextPage,
     isFetchingNextPage,
     isPreviousData,
-  } = useInfiniteQuery({
-    queryKey: ["movies", type],
+  } = useInfiniteQuery<FetchMoviesResponse>({
+    queryKey: ["movies", type ?? "popular"],
     queryFn: ({ pageParam }) =>
-      fetchMovies({ pageParam, queryKey: ["movies", type] }),
+      fetchMovies({ pageParam, queryKey: ["movies", type ?? "popular"] }),
 
     getNextPageParam: (lastPage) =>
       lastPage.nextPage <= lastPage.totalPages ? lastPage.nextPage : undefined,
@@ -107,12 +130,12 @@ export default function Movies() {
   if (isLoading) return <div style={{ color: "white" }}>Loading...</div>;
   if (isError) return <div style={{ color: "white" }}>Error!</div>;
 
-  const currentPage = data.pages[data.pages.length - 1]?.currentPage || 1;
+  const currentPage = data?.pages[data.pages.length - 1]?.currentPage || 1;
 
   return (
     <div>
       <MovieList>
-        {data.pages.map((page, pageIndex) =>
+        {data?.pages.map((page, pageIndex) =>
           page.results.map((movie, index) => (
             <MovieCard key={`${pageIndex}-${index}`} movie={movie} />
           ))
@@ -142,4 +165,6 @@ export default function Movies() {
       </PaginationControls>
     </div>
   );
-}
+};
+
+export default Movies;

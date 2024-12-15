@@ -2,6 +2,20 @@ import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import MovieCard from "../components/MovieCard";
 
+type Movie = {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string;
+  [key: string]: any;
+};
+
+type RecommendationsData = {
+  trending: Movie[];
+  basedOnRatings: Movie[];
+  similar: Movie[];
+};
+
 const PageContainer = styled.div`
   padding: 20px;
 `;
@@ -30,13 +44,11 @@ const MovieGrid = styled.div`
   margin-bottom: 40px;
 `;
 
-// TMDB API 토큰
 const API_TOKEN =
   "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjNTNkYWIyMDkxMzI2Y2Y3NTkwNTAwYjQyODNkNjZkNyIsIm5iZiI6MTcyNjE0MTU3Ny42MDM2ODcsInN1YiI6IjY0MzVmY2Y2NjUxZmNmMDBkM2RhYzNmNCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.cFPsPRHPidq2OnJ3U-3wHJYhnGajDFqUsM8XJ_a_0bw"; // 여기에 본인의 TMDB Bearer Token을 입력하세요.
 const BASE_URL = "https://api.themoviedb.org/3";
 
-// API 데이터 가져오기 함수
-const fetchRecommendations = async () => {
+const fetchRecommendations = async (): Promise<RecommendationsData> => {
   const headers = {
     Authorization: `Bearer ${API_TOKEN}`,
     "Content-Type": "application/json;charset=utf-8",
@@ -66,12 +78,12 @@ const fetchRecommendations = async () => {
   };
 };
 
-const RecommendationsPage = () => {
+const RecommendationsPage = (): JSX.Element => {
   const {
     data: recommendations,
     isLoading,
     isError,
-  } = useQuery({
+  } = useQuery<RecommendationsData>({
     queryKey: ["recommendations"],
     queryFn: fetchRecommendations,
   });
@@ -79,7 +91,7 @@ const RecommendationsPage = () => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) return <div>Error loading recommendations!</div>;
 
-  const renderMovieSection = (title, movies) => {
+  const renderMovieSection = (title: string, movies: Movie[]) => {
     return (
       <>
         <SectionTitle>{title}</SectionTitle>

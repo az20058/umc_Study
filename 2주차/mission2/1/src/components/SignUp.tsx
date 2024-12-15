@@ -7,24 +7,34 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 
-export default function SignUp() {
+interface SignUpFormValues {
+  email: string;
+  password: string;
+  password2: string;
+}
+
+export default function SignUp(): JSX.Element {
   const schema = yup.object().shape({
-    email: yup.string().email("올바른 이메일 형식을 사용하세요").required(),
+    email: yup
+      .string()
+      .email("올바른 이메일 형식을 사용하세요")
+      .required("이메일은 필수 입력 항목입니다."),
     password: yup
       .string()
       .min(8, "8~16자를 사용하세요")
       .max(16, "8~16자를 사용하세요")
-      .required(),
+      .required("비밀번호는 필수 입력 항목입니다."),
     password2: yup
       .string()
-      .oneOf([yup.ref("password"), null], "비밀번호가 일치하지 않습니다"),
+      .oneOf([yup.ref("password"), null], "비밀번호가 일치하지 않습니다")
+      .required("비밀번호 확인은 필수 입력 항목입니다."),
   });
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<SignUpFormValues>({
     resolver: yupResolver(schema),
     mode: "onSubmit",
     reValidateMode: "onChange",
@@ -34,7 +44,7 @@ export default function SignUp() {
 
   // 회원가입을 위한 useMutation 설정
   const signUpMutation = useMutation({
-    mutationFn: (data) =>
+    mutationFn: (data: SignUpFormValues) =>
       axios.post("http://localhost:3000/auth/register", data),
     onSuccess: () => {
       alert("회원가입이 완료되었습니다.");
@@ -46,7 +56,7 @@ export default function SignUp() {
     },
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: SignUpFormValues): void => {
     // useMutation의 mutate를 사용하여 회원가입 요청
     signUpMutation.mutate(data);
   };
@@ -74,7 +84,7 @@ export default function SignUp() {
         <label>{errors.password?.message}</label>
         <Input
           type="password"
-          name="passwordCheck"
+          name="password2"
           register={register}
           placeholder="비밀번호 확인"
         />
@@ -96,7 +106,7 @@ const PageWrapper = styled.div`
   justify-content: center;
 `;
 
-const SignupWrapper = styled.form`
+const SignupWrapper = styled.form<{ color: string }>`
   display: flex;
   flex-direction: column;
   width: 30%;

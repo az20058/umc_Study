@@ -4,14 +4,26 @@ import styled from "styled-components";
 import { debounce } from "lodash";
 import MovieCard from "./MovieCard";
 import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
-export default function Search() {
-  const titleRef = useRef();
-  const [query, setQuery] = useState("");
+interface Movie {
+  id: number;
+  title: string;
+  poster_path: string;
+  release_date: string;
+}
 
-  const fetchMovies = async (query) => {
+interface MovieResponse {
+  results: Movie[];
+}
+
+export default function Search(): JSX.Element {
+  const titleRef = useRef<HTMLInputElement>(null);
+  const [query, setQuery] = useState<string>("");
+
+  const fetchMovies = async (query: string): Promise<MovieResponse> => {
     if (!query.trim()) return { results: [] };
-    const { data } = await axios.get(
+    const { data } = await axios.get<MovieResponse>(
       `https://api.themoviedb.org/3/search/movie?query=${query}`,
       {
         headers: {
@@ -23,20 +35,22 @@ export default function Search() {
     return data;
   };
 
-  const { data, isFetching } = useQuery({
+  const { data, isFetching } = useQuery<MovieResponse>({
     queryKey: ["movies", query],
     queryFn: () => fetchMovies(query),
     enabled: !!query, // query가 빈 값이 아니어야 실행
     keepPreviousData: true,
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    titleRef.current = value;
+    if (titleRef.current) {
+      titleRef.current.value = value;
+    }
     debouncedSearch(value);
   };
 
-  const debouncedSearch = debounce((value) => {
+  const debouncedSearch = debounce((value: string) => {
     setQuery(value);
   }, 500);
 
@@ -57,8 +71,8 @@ export default function Search() {
         </Movies>
       ) : data?.results?.length > 0 ? (
         <Movies>
-          {data.results.map((movie, index) => (
-            <MovieCard key={index} movie={movie} />
+          {data.results.map((movie) => (
+            <MovieCard key={movie.id} movie={movie} />
           ))}
         </Movies>
       ) : (

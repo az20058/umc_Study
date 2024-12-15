@@ -1,15 +1,28 @@
 import styled from "styled-components";
-import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
+
+// `movie` 객체의 타입 정의
+interface Movie {
+  id: number;
+  poster_path: string;
+  title: string;
+  vote_average: number;
+  release_date: string;
+  overview: string;
+}
+
+// 컴포넌트 Props 타입 정의
+interface MovieCardProps {
+  movie: Movie;
+}
 
 const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-export default function MovieCard({ movie }) {
+export default function MovieCard({ movie }: MovieCardProps) {
   const navigate = useNavigate();
 
   return (
     <CardContainer
-      key={movie.id}
       onClick={() =>
         navigate(`/movies/${movie.id}`, {
           replace: false,
@@ -33,6 +46,7 @@ export default function MovieCard({ movie }) {
   );
 }
 
+// 스타일 컴포넌트 정의
 const CardContainer = styled.div`
   background-color: black;
   border-radius: 10px;
@@ -67,7 +81,3 @@ const MovieReleaseDate = styled.span`
   margin-top: 10px;
   display: block;
 `;
-
-MovieCard.propTypes = {
-  movie: PropTypes.object,
-};
